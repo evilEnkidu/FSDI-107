@@ -4,7 +4,7 @@ from config import dataBase
 
 app = Flask(__name__)
 
-product_list = []  # Renamed to avoid the name conflict
+product_list = []  # Assuming this might be a temporary fallback
 def fix_id(obj):
     obj["_id"] = str(obj["_id"])
     return obj
@@ -18,19 +18,26 @@ def about():
     me = {"name": "Emil"}
     return json.dumps(me)
 
-@app.get("/footer")  # This section is NOT a page
+@app.get("/footer")
 def footer():
     pageName = {"pageName": "Organika"}
     return json.dumps(pageName)
 
 @app.get("/api/products")
-def get_products():  # Renamed to avoid the name conflict
-    return json.dumps(product_list)
+def get_products():
+    # Retrieve products from database
+    products = list(dataBase.product_list.find())
+    return json.dumps([fix_id(product) for product in products])
+
+@app.get("/api/product/count")
+def get_product_count():
+    # Return the count of products in the database
+    count = dataBase.product_list.count_documents({})
+    return json.dumps({"count": count})
 
 @app.post("/api/products")
 def save_products():
     item = request.get_json()
-    #product_list.append(item)
     dataBase.product_list.insert_one(item)
     print(item)
     return json.dumps(fix_id(item))
@@ -42,9 +49,7 @@ def update_products(index):
         product_list[index] = update_item
         return json.dumps(update_item)
     else:
-        return "That index doesn't exist"
-
-
+        return "That index doesn't exist", 404
 
 if __name__ == "__main__":
     app.run(debug=True)
