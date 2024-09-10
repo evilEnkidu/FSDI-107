@@ -1,10 +1,9 @@
-from flask import Flask, request
-import json
+
 from config import dataBase
 
 app = Flask(__name__)
 
-product_list = []  # Assuming this might be a temporary fallback
+product_list = []  
 def fix_id(obj):
     obj["_id"] = str(obj["_id"])
     return obj
